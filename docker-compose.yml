@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: pgvector/pgvector:16-pgvector
+    container_name: memory-brain-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: memory_brain
+      POSTGRES_PASSWORD: memory_brain
+      POSTGRES_DB: memory_brain
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U memory_brain -d memory_brain"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
