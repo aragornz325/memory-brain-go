@@ -47,6 +47,59 @@ func NewServer(memorySvc *service.MemoryService, db *database.Database) *Server 
 		Description: "Check the status and health of the Memory Brain backend and its database connection.",
 	}, s.handleHealth)
 
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "memory.workspace_context",
+		Description: "Retrieve operational context for a workspace (stack, conventions, architecture decisions).",
+	}, s.handleWorkspaceContext)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "memory.project_snapshot",
+		Description: "Retrieve project snapshot (technologies, active features, open decisions, risks, onboarding info).",
+	}, s.handleProjectSnapshot)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "memory.related",
+		Description: "Fetch memories related to the specified memory ID.",
+	}, s.handleRelated)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "memory.decide_save",
+		Description: "Automatically analyze if a memory summary should be saved to the database, suggesting workspace, tags, and memory type.",
+	}, s.handleDecideSave)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "memory.stats",
+		Description: "Retrieve statistics and metrics on database memories and performance.",
+	}, s.handleStats)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "memory.link",
+		Description: "Link two memories together with a relationship type (e.g., related_to, supersedes).",
+	}, s.handleLink)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "memory.bootstrap",
+		Description: "Perform session bootstrapping: compiles workspace context, project snapshots, recent decisions, known risks, task-relevant memories, recommended tags, and performance stats.",
+	}, s.handleBootstrap)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "memory.detect_workspace",
+		Description: "Determine the current active workspace by evaluating matching scores of directory path components against workspace slugs and aliases.",
+	}, s.handleDetectWorkspace)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "memory.smart_bootstrap",
+		Description: "Automatically detect the current active workspace from the path and execute session bootstrapping for the given task.",
+	}, s.handleSmartBootstrap)
+
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "memory.set_workspace_aliases",
+		Description: "Set or update workspace aliases (directory naming patterns) for auto workspace detection.",
+	}, s.handleSetWorkspaceAliases)
+
+	// Register Resources and Prompts
+	s.registerResourcesAndPrompts()
+
 	return s
 }
 

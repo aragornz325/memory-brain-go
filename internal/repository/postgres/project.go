@@ -66,3 +66,26 @@ func (r *ProjectRepository) Create(ctx context.Context, p *domain.Project) error
 
 	return nil
 }
+
+func (r *ProjectRepository) ListByWorkspace(ctx context.Context, workspaceID string) ([]*domain.Project, error) {
+	query := `
+		SELECT id, created_at, updated_at, workspace_id, slug 
+		FROM memory.projects 
+		WHERE workspace_id = $1 
+		ORDER BY slug ASC`
+	rows, err := r.pool.Query(ctx, query, workspaceID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list projects by workspace: %w", err)
+	}
+	defer rows.Close()
+
+	var list []*domain.Project
+	for rows.Next() {
+		var p domain.Project
+		if err := rows.Scan(&p.ID, &p.CreatedAt, &p.UpdatedAt, &p.WorkspaceID, &p.Slug); err != nil {
+			return nil, fmt.Errorf("failed to scan project: %w", err)
+		}
+		list = append(list, &p)
+	}
+	return list, nil
+}

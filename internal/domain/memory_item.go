@@ -40,8 +40,26 @@ type MemoryItem struct {
 	Importance    int                    `json:"importance"`
 	Confidence    float64                `json:"confidence"`
 	IsActive      bool                   `json:"is_active"`
-	Embedding     []float32              `json:"-"` // Not selected by default
+	MemoryType    *string                `json:"memory_type,omitempty"`
+	Status        string                 `json:"status"` // active, deprecated, obsolete
+	Embedding     []float32              `json:"-"`       // Not selected by default
 }
+
+const (
+	MemoryTypeArchitecture   = "architecture"
+	MemoryTypeDecision       = "decision"
+	MemoryTypeBugfix         = "bugfix"
+	MemoryTypeWorkflow       = "workflow"
+	MemoryTypeConvention     = "convention"
+	MemoryTypeInfrastructure = "infrastructure"
+	MemoryTypeLessonLearned  = "lesson_learned"
+	MemoryTypeConfiguration  = "configuration"
+	MemoryTypeDeployment     = "deployment"
+
+	StatusActive     = "active"
+	StatusDeprecated = "deprecated"
+	StatusObsolete   = "obsolete"
+)
 
 type MemorySearchRow struct {
 	MemoryItem

@@ -39,10 +39,10 @@ type AuthConfig struct {
 }
 
 func Load() *Config {
-	// Attempt to load .env file from working directory
-	if err := godotenv.Load(); err != nil {
+	// Attempt to load .env file from working directory and override existing env vars
+	if err := godotenv.Overload(); err != nil {
 		// Fallback to the absolute path of the project .env file
-		if errFallback := godotenv.Load("/home/chivo/memory-brain-go/.env"); errFallback != nil {
+		if errFallback := godotenv.Overload("/home/chivo/memory-brain-go/.env"); errFallback != nil {
 			slog.Warn("No .env file found or error reading it, relying on environmental variables")
 		}
 	}

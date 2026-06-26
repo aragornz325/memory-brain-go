@@ -55,10 +55,12 @@ func main() {
 	workspaceRepo := postgres.NewWorkspaceRepository(db.Pool)
 	projectRepo := postgres.NewProjectRepository(db.Pool)
 	memoryItemRepo := postgres.NewMemoryItemRepository(db.Pool)
+	memoryLinkRepo := postgres.NewMemoryLinkRepository(db.Pool)
 
 	// 4. Initialize services
 	embeddingSvc := service.NewEmbeddingService(cfg)
-	memorySvc := service.NewMemoryService(workspaceRepo, projectRepo, memoryItemRepo, embeddingSvc)
+	llmSvc := service.NewLLMService(cfg)
+	memorySvc := service.NewMemoryService(workspaceRepo, projectRepo, memoryItemRepo, embeddingSvc, llmSvc, memoryLinkRepo)
 
 	if isMcp {
 		slog.Info("Starting MCP Server mode...")
