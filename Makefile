@@ -1,27 +1,44 @@
-.PHONY: build run-server run-db test migrate-status migrate-up migrate-down clean
+.PHONY: build run-server test clean deploy restart logs status db-up db-down
 
-# Compilar binarios
+APP_NAME=memory-brain
+SERVER_BIN=bin/server
+CLI_BIN=bin/memory
+
 build:
 	mkdir -p bin
-	go build -o bin/server cmd/server/main.go
-	go build -o bin/memory cmd/cli/main.go
+	go build -o $(SERVER_BIN) cmd/server/main.go
+	go build -o $(CLI_BIN) cmd/cli/main.go
 
-# Ejecutar el servidor HTTP localmente
 run-server:
+	./$(SERVER_BIN)
+
+dev-server:
 	go run cmd/server/main.go
 
-# Levantar base de datos PostgreSQL local
-run-db:
-	docker-compose up -d
-
-# Detener base de datos
-stop-db:
-	docker-compose down
-
-# Ejecutar pruebas unitarias
 test:
 	go test -v ./...
 
-# Limpiar binarios
 clean:
 	rm -rf bin/
+
+restart:
+	pm2 restart $(APP_NAME)
+
+logs:
+	pm2 logs $(APP_NAME)
+
+status:
+	pm2 status $(APP_NAME)
+
+deploy:
+	git pull
+	$(MAKE) build
+	pm2 restart $(APP_NAME)
+	pm2 save
+
+# Solo para desarrollo local, no usar en server productivo
+db-up:
+	docker-compose up -d
+
+db-down:
+	docker-compose down
