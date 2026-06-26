@@ -41,7 +41,10 @@ type AuthConfig struct {
 func Load() *Config {
 	// Attempt to load .env file from working directory
 	if err := godotenv.Load(); err != nil {
-		slog.Warn("No .env file found or error reading it, relying on environmental variables")
+		// Fallback to the absolute path of the project .env file
+		if errFallback := godotenv.Load("/home/chivo/memory-brain-go/.env"); errFallback != nil {
+			slog.Warn("No .env file found or error reading it, relying on environmental variables")
+		}
 	}
 
 	port := getEnv("SERVER_PORT", "3210")
