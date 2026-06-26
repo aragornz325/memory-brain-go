@@ -14,18 +14,31 @@ import (
 	"memory-brain/internal/config"
 	"memory-brain/internal/database"
 	httpApi "memory-brain/internal/http"
+	mcpServer "memory-brain/internal/mcp"
 	"memory-brain/internal/repository/postgres"
 	"memory-brain/internal/service"
 )
 
 func main() {
-	// Configure slog to log JSON to stdout
+	// Configure slog to log JSON to stdout by default
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
 	slog.SetDefault(logger)
 
-	slog.Info("Starting Memory Brain Go backend server...")
+	// Check if we should boot as an MCP server
+	isMcp := len(os.Args) > 1 && os.Args[1] == "mcp"
+
+	if isMcp {
+		// Override default logger to write to stderr so we don't pollute stdout
+		// (Stdio transport protocol uses stdout for JSON-RPC messages)
+		logger = slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+			Level: slog.LevelInfo,
+		}))
+		slog.SetDefault(logger)
+	}
+
+	slog.Info("Starting Memory Brain Go backend...")
 
 	// 1. Load config
 	cfg := config.Load()
@@ -46,6 +59,16 @@ func main() {
 	// 4. Initialize services
 	embeddingSvc := service.NewEmbeddingService(cfg)
 	memorySvc := service.NewMemoryService(workspaceRepo, projectRepo, memoryItemRepo, embeddingSvc)
+
+	if isMcp {
+		slog.Info("Starting MCP Server mode...")
+		mcpSrv := mcpServer.NewServer(memorySvc, db)
+		if err := mcpSrv.Run(context.Background()); err != nil {
+			slog.Error("MCP Server terminated with error", "error", err)
+			os.Exit(1)
+		}
+		return
+	}
 
 	// 5. Initialize handlers and router
 	handler := httpApi.NewHandler(memorySvc)
